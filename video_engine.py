@@ -1,22 +1,30 @@
-# video_engine.py — Darkroom AI Video Builder
+# video_engine.py – Darkroom AI Video Builder
 
 import os
 import subprocess
+import time
 
-def generate_video(audio_path, image_path, output_path="video.mp4"):
-    """Audio + thumbnail ile video oluşturur."""
+def generate_video(audio_path, image_path, output_path=None):
+    """Audio + image ile video oluşturur."""
 
     if not os.path.exists(audio_path):
-        print("audio file missing")
+        print("❌ Audio dosyası yok!")
         return None
 
     if not os.path.exists(image_path):
-        print("image file missing")
+        print("❌ Thumbnail dosyası yok!")
         return None
+
+    # Benzersiz video adı
+    if output_path is None:
+        ts = int(time.time())
+        output_path = f"output_video_{ts}.mp4"
 
     try:
         cmd = [
-            "ffmpeg", "-loop", "1",
+            "ffmpeg",
+            "-y",
+            "-loop", "1",
             "-i", image_path,
             "-i", audio_path,
             "-c:v", "libx264",
@@ -25,14 +33,15 @@ def generate_video(audio_path, image_path, output_path="video.mp4"):
             "-b:a", "192k",
             "-pix_fmt", "yuv420p",
             "-shortest",
-            output_path,
-            "-y"
+            output_path
         ]
 
+        print("▶️ FFmpeg çalışıyor...")
         subprocess.run(cmd, check=True)
+        print("✅ Video üretildi:", output_path)
 
         return output_path
 
     except Exception as e:
-        print("video generation error:", e)
+        print("❌ Video generation error:", e)
         return None
