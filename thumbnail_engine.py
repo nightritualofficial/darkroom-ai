@@ -1,27 +1,19 @@
-# thumbnail_engine.py – Darkroom AI Thumbnail Generator
-import os
-import base64
-from openai import OpenAI
+# thumbnail_engine.py – Darkroom AI Thumbnail (fallback)
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+import os
+
+# Repo köküne koyacağımız sabit görsel
+FALLBACK_THUMBNAIL = "default_thumbnail.png"
+
 
 def generate_thumbnail(prompt, output_path="thumbnail.png"):
-    """Thumbnail image generator using gpt-image-1-mini."""
-
-    try:
-        response = client.images.generate(
-            model="gpt-image-1-mini",
-            prompt=prompt,
-            size="1024x1024"
-        )
-
-        image_base64 = response.data[0].b64_json
-
-        with open(output_path, "wb") as f:
-            f.write(base64.b64decode(image_base64))
-
-        return output_path
-
-    except Exception as e:
-        print("Thumbnail generation error:", e)
+    """
+    Şimdilik OpenAI image API kullanmıyoruz (kuruluş doğrulaması istiyor).
+    Onun yerine repo kökündeki default_thumbnail.png dosyasını kullanıyoruz.
+    """
+    if os.path.exists(FALLBACK_THUMBNAIL):
+        print("🖼 Thumbnail için yedek görsel kullanılıyor:", FALLBACK_THUMBNAIL)
+        return FALLBACK_THUMBNAIL
+    else:
+        print("❌ default_thumbnail.png bulunamadı, thumbnail olmadan devam edilecek.")
         return None
