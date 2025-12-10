@@ -1,35 +1,47 @@
-name: Run Daily Video
+# video_engine.py – Darkroom AI Video Builder
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 */6 * * *"
+import os
+import subprocess
+import time
 
-jobs:
-  run-video:
-    runs-on: ubuntu-latest
+def generate_video(audio_path, image_path, output_path=None):
+    """Audio + image ile video olusturur."""
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    if not os.path.exists(audio_path):
+        print("❌ Audio dosyası yok!")
+        return None
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
+    if not os.path.exists(image_path):
+        print("❌ Thumbnail dosyası yok!")
+        return None
 
-      - name: Install Requirements
-        run: pip install -r requirements.txt
+    # Benzersiz video adı
+    if output_path is None:
+        ts = int(time.time())
+        output_path = f"output_video_{ts}.mp4"
 
-      - name: Install FFmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+    try:
+        cmd = [
+            "ffmpeg",
+            "-y",
+            "-loop", "1",
+            "-i", image_path,
+            "-i", audio_path,
+            "-c:v", "libx264",
+            "-tune", "stillimage",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-pix_fmt", "yuv420p",
+            "-shortest",
+            output_path
+        ]
 
-      - name: Generate Daily Video
-        run: python3 main.py
+        print("🎬 FFmpeg çalışıyor...")
+        subprocess.run(cmd, check=True)
+        print("✅ Video üretildi:", output_path)
 
-      - name: Upload to YouTube
-        env:
-          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-          YT_TOKEN: ${{ secrets.YT_TOKEN }}
-        run: |
-          python3 youtube_uploader.py
+        return output_path
+
+    except Exception as e:
+        print("❌ Video generation error:", e)
+        return None
