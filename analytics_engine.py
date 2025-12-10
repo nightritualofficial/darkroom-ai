@@ -1,42 +1,26 @@
-# analytics_engine.py — Darkroom AI Comment Analyzer
-# Bu sürüm YouTube API henüz eklenmediği için simüle analiz yapar.
-# Uploader tamamlandığında gerçek veriye bağlanacak şekilde tasarlanmıştır.
+# analytics_engine.py — Darkroom AI Analytics
 
-import random
+import os
+from openai import OpenAI
 
-def analyze_comments(video_id):
-    """
-    Yorumları analiz eder.
-    Şu anda simüle edildiği için rastgele bir analiz döndürür.
-    Uploader tamamlandığında gerçek YouTube API'sine bağlanacak.
-    """
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    print(f"📊 Yorumlar analiz ediliyor (video: {video_id})...")
+def analyze_comments(comments):
+    """Yorumlara göre hangi tema daha iyi performans veriyor."""
+    try:
+        text = "\n".join(comments)
 
-    fake_comments = [
-        "Part 2 pls!!",
-        "This was terrifying omg",
-        "More like this!",
-        "DROP PART 2 NOW",
-        "Amazing work bro",
-        "Part2??",
-        "make a series plsss"
-    ]
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Analyze horror video comments and determine interest themes."},
+                {"role": "user", "content": text}
+            ],
+            max_tokens=200
+        )
 
-    return fake_comments
+        return response.choices[0].message.content.strip()
 
-
-def should_generate_part2(video_id):
-    """
-    Yorumlarda 'part 2' isteği varsa true döner.
-    Şu anda fake veri ile çalışır.
-    """
-
-    comments = analyze_comments(video_id)
-
-    part2_count = sum("part" in c.lower() and "2" in c.lower() for c in comments)
-
-    print(f"🔎 'Part 2' tespit edilen yorum sayısı: {part2_count}")
-
-    # En az 2 kişi istemişse ertesi gün Part 2 planlanır
-    return part2_count >= 2
+    except Exception as e:
+        print("analytics error:", e)
+        return "analysis unavailable"
