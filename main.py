@@ -1,45 +1,38 @@
-from story_engine import generate_story
-from audio_engine import generate_tts
-from thumbnail_engine import generate_thumbnail
-from video_engine import create_video
-from analytics_engine import analyze_category
+# main.py — Darkroom AI Main Pipeline
 
-import random
-import json
+from story_engine import generate_story
+from audio_engine import generate_audio
+from thumbnail_engine import generate_thumbnail
+from video_engine import generate_video
+import json, random
 
 def load_categories():
     with open("categories.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
-def generate_prompt():
+def select_random_theme():
     categories = load_categories()
-    category = random.choice(categories["horror"])
-    return f"Write a short horror story about: {category}"
+    all_items = [item for cat in categories.values() for item in cat]
+    return random.choice(all_items)
 
-def main():
-    print("🟣 DARKROOM-AI PIPELINE BAŞLIYOR")
+def pipeline(mode="normal"):
+    print("\n🔥 DARKROOM-AI PIPELINE BAŞLIYOR 🔥")
 
-    # Hikâye üretimi
-    prompt = generate_prompt()
-    print(f"📌 Seçilen tema: {prompt}")
+    theme = select_random_theme()
+    print("🎭 Seçilen tema:", theme)
 
-    story = generate_story(prompt)
-    print(f"✍️ Hikaye oluşturuldu ({len(story)} karakter)")
+    story = generate_story(theme, mode)
+    print("📖 Hikaye oluşturuldu.\n")
 
-    # Ses oluşturma
-    audio_path = generate_tts(story)
-    print(f"🔊 Ses dosyası hazır: {audio_path}")
+    audio_path = generate_audio(story)
+    print("🔊 Ses hazır:", audio_path)
 
-    # Thumbnail / görsel
-    image_prompt = f"Horror scene: {prompt}"
-    thumbnail_path = generate_thumbnail(image_prompt)
-    print(f"🖼 Thumbnail üretildi: {thumbnail_path}")
+    img_prompt = theme
+    thumbnail_path = generate_thumbnail(img_prompt)
+    print("🖼️ Thumbnail:", thumbnail_path)
 
-    # Video oluştur
-    video_path = create_video(thumbnail_path, audio_path)
-    print(f"🎬 Video oluşturuldu: {video_path}")
+    video_path = generate_video(audio_path, thumbnail_path)
+    print("🎬 Video hazır:", video_path)
 
-    print("✅ PIPELINE BAŞARIYLA TAMAMLANDI")
-
-if __name__ == "__main__":
-    main()
+    print("🎉 PIPELINE TAMAMLANDI!")
+    return video_path
