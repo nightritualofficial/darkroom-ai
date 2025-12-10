@@ -1,29 +1,42 @@
-name: Morning Short Video
+name: short_morning
 
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: "0 6 * * *"   # Sabah 06:00 (Short 1)
   workflow_dispatch:
 
 jobs:
-  run-morning-short:
+  generate-short:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+    - name: Install Requirements
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: Run morning short
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          python3 main.py --mode short1
+    - name: Generate Short
+      run: |
+        python3 main.py --short
+
+    - name: Upload Short to YouTube
+      run: |
+        python3 youtube_uploader.py \
+        "output/short.mp4" \
+        "Short Horror Clip" \
+        "AI-generated short horror scene" \
+        "horror,ai,darkroom,shorts" \
+        "output/thumbnail.jpg" \
+        "short"
+      env:
+        YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+        YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+        YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
