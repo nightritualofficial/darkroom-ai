@@ -29,7 +29,7 @@ def generate_thumbnail(story, out_path="thumbnail.png"):
         response = client.images.generate(
             model="gpt-image-1",
             prompt=prompt,
-            size="1280x720"
+            size="1024x1024"
         )
 
         img_b64 = response.data[0].b64_json
