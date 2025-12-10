@@ -3,7 +3,7 @@ name: daily_video
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 18 * * *"  # 18:00 TR (global peak hour)
+    - cron: "0 18 * * *"
 
 jobs:
   run-video:
@@ -25,6 +25,8 @@ jobs:
 
       - name: Generate Daily Video
         run: python3 main.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Upload to YouTube
         run: |
@@ -35,7 +37,6 @@ jobs:
           "horror,scary,ai,story,darkroom" \
           "output/thumbnail.jpg"
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
